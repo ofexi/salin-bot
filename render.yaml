@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: salon-telegram-bot
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BOT_TOKEN
+        value: 8558474673:AAGayUvuxDfykd8JojHVdSv3IeUPgM4sa2k

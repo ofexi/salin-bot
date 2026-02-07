@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автоматическое развертывание - Salon Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .platform {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .platform:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        
+        .platform h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .platform p {
+            color: #666;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        
+        .platform-info {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-free {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-recommended {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .deploy-btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-render {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-render:hover {
+            background: #5568d3;
+        }
+        
+        .btn-railway {
+            background: #0B0D0E;
+            color: white;
+        }
+        
+        .btn-railway:hover {
+            background: #1a1d1f;
+        }
+        
+        .btn-glitch {
+            background: #F55B99;
+            color: white;
+        }
+        
+        .btn-glitch:hover {
+            background: #e04586;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .token-box {
+            background: #fff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Автоматическое развертывание</h1>
+        <p class="subtitle">Выберите платформу для бесплатного хостинга вашего Telegram бота</p>
+        
+        <!-- Render.com -->
+        <div class="platform">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h3>Render.com</h3>
+                <div>
+                    <span class="badge badge-free">Бесплатно</span>
+                    <span class="badge badge-recommended">Рекомендуем</span>
+                </div>
+            </div>
+            <p>Самый простой способ развертывания. Автоматический HTTPS, хорошие логи, 750 часов/месяц бесплатно.</p>
+            <div class="platform-info">
+                <div class="info-item">✓ 750 часов/мес</div>
+                <div class="info-item">✓ Авто HTTPS</div>
+                <div class="info-item">⚠️ Засыпает через 15 мин</div>
+            </div>
+            <a href="https://render.com/deploy?repo=https://github.com/YOUR_USERNAME/salon-telegram-bot" 
+               target="_blank" 
+               class="deploy-btn btn-render"
+               onclick="return checkGitHub()">
+                Развернуть на Render.com →
+            </a>
+        </div>
+        
+        <!-- Railway.app -->
+        <div class="platform">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h3>Railway.app</h3>
+                <span class="badge badge-free">Бесплатно</span>
+            </div>
+            <p>Очень простой интерфейс. $5 кредитов в месяц бесплатно (хватит на ~500 часов работы).</p>
+            <div class="platform-info">
+                <div class="info-item">✓ $5 кредитов/мес</div>
+                <div class="info-item">✓ Простой UI</div>
+                <div class="info-item">⚠️ Ограничено временем</div>
+            </div>
+            <a href="https://railway.app/new" 
+               target="_blank" 
+               class="deploy-btn btn-railway">
+                Развернуть на Railway.app →
+            </a>
+        </div>
+        
+        <!-- Glitch.com -->
+        <div class="platform">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h3>Glitch.com</h3>
+                <span class="badge badge-free">Бесплатно</span>
+            </div>
+            <p>Не засыпает! Отлично для небольших проектов. Онлайн редактор кода.</p>
+            <div class="platform-info">
+                <div class="info-item">✓ Не засыпает</div>
+                <div class="info-item">✓ Онлайн редактор</div>
+                <div class="info-item">✓ Безлимитно</div>
+            </div>
+            <a href="https://glitch.com/edit/#!/import/github/YOUR_USERNAME/salon-telegram-bot" 
+               target="_blank" 
+               class="deploy-btn btn-glitch"
+               onclick="return checkGitHub()">
+                Развернуть на Glitch.com →
+            </a>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 Инструкция по развертыванию</h3>
+            <ol>
+                <li><strong>Создайте GitHub репозиторий:</strong>
+                    <ul style="margin-top: 8px;">
+                        <li>Перейдите на <a href="https://github.com/new" target="_blank">github.com/new</a></li>
+                        <li>Назовите: <code>salon-telegram-bot</code></li>
+                        <li>Загрузите файлы из архива <code>salon-app-deploy.tar.gz</code></li>
+                    </ul>
+                </li>
+                <li><strong>Нажмите на кнопку выше</strong> для выбранной платформы</li>
+                <li><strong>Добавьте переменную окружения:</strong>
+                    <div class="token-box">
+                        BOT_TOKEN=8558474673:AAGayUvuxDfykd8JojHVdSv3IeUPgM4sa2k
+                        <button class="copy-btn" onclick="copyToken()">Копировать</button>
+                    </div>
+                </li>
+                <li><strong>Дождитесь развертывания</strong> (2-3 минуты)</li>
+                <li><strong>Скопируйте URL приложения</strong></li>
+                <li><strong>Настройте Telegram бота:</strong>
+                    <ul style="margin-top: 8px;">
+                        <li>Откройте @BotFather в Telegram</li>
+                        <li>/mybots → выберите бота</li>
+                        <li>Bot Settings → Menu Button</li>
+                        <li>Вставьте URL вашего приложения</li>
+                    </ul>
+                </li>
+                <li><strong>Готово!</strong> Проверьте бота командой /start</li>
+            </ol>
+        </div>
+    </div>
+    
+    <script>
+        function copyToken() {
+            const token = '8558474673:AAGayUvuxDfykd8JojHVdSv3IeUPgM4sa2k';
+            navigator.clipboard.writeText('BOT_TOKEN=' + token).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Скопировано';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        function checkGitHub() {
+            const username = prompt('Введите ваш GitHub username:');
+            if (!username) {
+                alert('GitHub username обязателен для развертывания');
+                return false;
+            }
+            
+            // Update URL with actual username
+            event.target.href = event.target.href.replace('YOUR_USERNAME', username);
+            return true;
+        }
+    </script>
+</body>
+</html>
