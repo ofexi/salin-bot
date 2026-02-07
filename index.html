@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Салон Красоты - Запись онлайн</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #161616;
+            --bg-card: #1a1a1a;
+            --accent-gold: #d4af37;
+            --accent-rose: #e8b4b8;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: #2a2a2a;
+            --success: #4ade80;
+            --warning: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .app-container {
+            max-width: 100%;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 16px 20px;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 76px;
+            background: var(--bg-primary);
+            z-index: 99;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            color: var(--bg-primary);
+            border-color: transparent;
+            transform: scale(1.05);
+        }
+
+        .content {
+            padding: 20px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .service-category {
+            margin-bottom: 32px;
+        }
+
+        .category-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .service-card:hover::before {
+            left: 100%;
+        }
+
+        .service-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
+        }
+
+        .service-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .service-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .service-duration {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .service-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            white-space: nowrap;
+        }
+
+        .master-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .master-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .master-card:hover,
+        .master-card.selected {
+            border-color: var(--accent-gold);
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(232, 180, 184, 0.1));
+            transform: translateY(-4px);
+        }
+
+        .master-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--bg-primary);
+        }
+
+        .master-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .master-specialty {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .master-rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 13px;
+            color: var(--accent-gold);
+        }
+
+        .calendar-container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .calendar-nav:hover {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+        }
+
+        .calendar-month {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 8px;
+            font-weight: 600;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .calendar-day:not(.disabled):hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-gold);
+        }
+
+        .calendar-day.selected {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            color: var(--bg-primary);
+            font-weight: 700;
+        }
+
+        .calendar-day.disabled {
+            color: var(--text-secondary);
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.today {
+            border: 1px solid var(--accent-gold);
+        }
+
+        .time-slots {
+            margin-top: 24px;
+        }
+
+        .time-slots-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-rose);
+        }
+
+        .time-slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 8px;
+        }
+
+        .time-slot {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .time-slot:hover {
+            background: var(--bg-card);
+            border-color: var(--accent-gold);
+        }
+
+        .time-slot.selected {
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            color: var(--bg-primary);
+            border-color: transparent;
+            font-weight: 600;
+        }
+
+        .time-slot.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background: var(--bg-secondary);
+        }
+
+        .booking-summary {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            border: 1px solid var(--accent-gold);
+            border-radius: 20px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .summary-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--accent-gold);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            color: var(--bg-primary);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .profile-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .profile-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--bg-primary);
+        }
+
+        .profile-info h2 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .profile-stats {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .appointment-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .appointment-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--accent-gold), var(--accent-rose));
+        }
+
+        .appointment-status {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .appointment-status.upcoming {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--success);
+        }
+
+        .appointment-status.past {
+            background: rgba(160, 160, 160, 0.2);
+            color: var(--text-secondary);
+        }
+
+        .appointment-date {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--accent-gold);
+        }
+
+        .appointment-details {
+            color: var(--text-secondary);
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .appointment-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-gold);
+        }
+
+        .btn-cancel {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-cancel:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .success-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            max-width: 90%;
+            border: 2px solid var(--accent-gold);
+        }
+
+        .success-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .success-message {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        /* Admin Panel Styles */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .admin-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-admin-add {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            color: var(--bg-primary);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-admin-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-admin-action {
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-admin-action:hover {
+            background: var(--bg-card);
+            border-color: var(--accent-gold);
+        }
+
+        .admin-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .admin-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+            background: var(--bg-card);
+        }
+
+        .admin-category-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .admin-category-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 16px;
+        }
+
+        .admin-services-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .admin-service-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s;
+        }
+
+        .admin-service-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateX(4px);
+        }
+
+        .admin-service-info {
+            flex: 1;
+        }
+
+        .admin-service-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .admin-service-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .admin-service-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-gold);
+            transform: scale(1.1);
+        }
+
+        .btn-icon.btn-danger:hover {
+            border-color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .admin-masters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .admin-master-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: all 0.3s;
+        }
+
+        .admin-master-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.15);
+        }
+
+        .admin-master-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--bg-primary);
+            flex-shrink: 0;
+        }
+
+        .admin-master-info {
+            flex: 1;
+        }
+
+        .admin-master-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .admin-master-specialty {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .admin-master-telegram {
+            font-size: 13px;
+            color: var(--accent-rose);
+            margin-bottom: 4px;
+        }
+
+        .admin-master-rating {
+            font-size: 14px;
+            color: var(--accent-gold);
+        }
+
+        .admin-master-actions {
+            display: flex;
+            gap: 8px;
+            flex-direction: column;
+        }
+
+        .notification-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .notification-card:not(.read) {
+            border-left: 4px solid var(--accent-gold);
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.05), var(--bg-card));
+        }
+
+        .notification-card.read {
+            opacity: 0.6;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .notification-badge {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .notification-message {
+            white-space: pre-line;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 32px;
+            max-width: 500px;
+            width: 100%;
+            border: 2px solid var(--accent-gold);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-rose));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+        @media (max-width: 640px) {
+            .master-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .time-slots-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .admin-masters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Initial mock data
+        const INITIAL_SERVICES = {
+            'Стрижки': [
+                { id: 1, name: 'Женская стрижка', duration: 60, price: 2500 },
+                { id: 2, name: 'Мужская стрижка', duration: 45, price: 1500 },
+                { id: 3, name: 'Детская стрижка', duration: 30, price: 1000 }
+            ],
+            'Окрашивание': [
+                { id: 4, name: 'Полное окрашивание', duration: 180, price: 5500 },
+                { id: 5, name: 'Мелирование', duration: 150, price: 4500 },
+                { id: 6, name: 'Тонирование', duration: 90, price: 3000 }
+            ],
+            'Ногтевой сервис': [
+                { id: 7, name: 'Маникюр + покрытие', duration: 90, price: 2000 },
+                { id: 8, name: 'Педикюр', duration: 60, price: 1800 },
+                { id: 9, name: 'Наращивание ногтей', duration: 120, price: 3500 }
+            ],
+            'Уход': [
+                { id: 10, name: 'Уход за лицом', duration: 60, price: 3000 },
+                { id: 11, name: 'Массаж головы', duration: 30, price: 1500 },
+                { id: 12, name: 'Восстановление волос', duration: 90, price: 3500 }
+            ]
+        };
+
+        const INITIAL_MASTERS = [
+            { id: 1, name: 'Анна Иванова', specialty: 'Стилист-парикмахер', rating: 4.9, avatar: 'АИ', telegramId: '@anna_stylist' },
+            { id: 2, name: 'Мария Петрова', specialty: 'Колорист', rating: 4.8, avatar: 'МП', telegramId: '@maria_color' },
+            { id: 3, name: 'Елена Смирнова', specialty: 'Мастер маникюра', rating: 5.0, avatar: 'ЕС', telegramId: '@elena_nails' },
+            { id: 4, name: 'Ольга Козлова', specialty: 'Универсал', rating: 4.7, avatar: 'ОК', telegramId: '@olga_universal' }
+        ];
+
+        const TIME_SLOTS = [
+            '09:00', '10:00', '11:00', '12:00', '13:00', '14:00',
+            '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
+        ];
+
+        // Admin credentials (in real app should be server-side)
+        const ADMIN_IDS = [123456789]; // Replace with real Telegram user IDs
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('services');
+            const [selectedService, setSelectedService] = useState(null);
+            const [selectedMaster, setSelectedMaster] = useState(null);
+            const [selectedDate, setSelectedDate] = useState(null);
+            const [selectedTime, setSelectedTime] = useState(null);
+            const [currentMonth, setCurrentMonth] = useState(new Date());
+            const [showSuccess, setShowSuccess] = useState(false);
+            const [isAdmin, setIsAdmin] = useState(false);
+            
+            // Admin state
+            const [services, setServices] = useState(INITIAL_SERVICES);
+            const [masters, setMasters] = useState(INITIAL_MASTERS);
+            const [notifications, setNotifications] = useState([]);
+            const [editingService, setEditingService] = useState(null);
+            const [editingMaster, setEditingMaster] = useState(null);
+            const [newCategory, setNewCategory] = useState('');
+            
+            const [userAppointments, setUserAppointments] = useState([
+                {
+                    id: 1,
+                    service: 'Женская стрижка',
+                    master: 'Анна Иванова',
+                    date: '15 февраля 2026',
+                    time: '14:00',
+                    status: 'upcoming'
+                },
+                {
+                    id: 2,
+                    service: 'Маникюр + покрытие',
+                    master: 'Елена Смирнова',
+                    date: '28 января 2026',
+                    time: '16:00',
+                    status: 'past'
+                }
+            ]);
+
+            useEffect(() => {
+                // Initialize Telegram WebApp
+                if (window.Telegram?.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    window.Telegram.WebApp.expand();
+                    
+                    // Check if user is admin
+                    const userId = window.Telegram.WebApp.initDataUnsafe?.user?.id;
+                    if (ADMIN_IDS.includes(userId)) {
+                        setIsAdmin(true);
+                    }
+                }
+                
+                // For demo purposes, enable admin mode
+                setIsAdmin(true);
+            }, []);
+
+            const sendNotification = (booking) => {
+                const notification = {
+                    id: Date.now(),
+                    message: `🔔 Новая запись!\n👤 Клиент: ${window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Пользователь'}\n💇‍♀️ Услуга: ${booking.service}\n👨‍💼 Мастер: ${booking.master}\n📅 Дата: ${booking.date}\n⏰ Время: ${booking.time}`,
+                    timestamp: new Date().toLocaleString('ru-RU'),
+                    read: false
+                };
+                
+                setNotifications(prev => [notification, ...prev]);
+                
+                // In real app, send to Telegram bot
+                console.log('Notification sent to admin and master:', notification);
+            };
+
+            const handleBooking = () => {
+                const newAppointment = {
+                    id: Date.now(),
+                    service: selectedService.name,
+                    master: selectedMaster.name,
+                    date: selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }),
+                    time: selectedTime,
+                    status: 'upcoming'
+                };
+                
+                setUserAppointments([newAppointment, ...userAppointments]);
+                sendNotification(newAppointment);
+                
+                setShowSuccess(true);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                    setActiveTab('profile');
+                    setSelectedService(null);
+                    setSelectedMaster(null);
+                    setSelectedDate(null);
+                    setSelectedTime(null);
+                }, 2500);
+            };
+
+            const handleCancelAppointment = (id) => {
+                setUserAppointments(userAppointments.filter(apt => apt.id !== id));
+            };
+
+            // Admin functions
+            const addService = (category, service) => {
+                const newService = {
+                    id: Date.now(),
+                    ...service
+                };
+                
+                setServices(prev => ({
+                    ...prev,
+                    [category]: [...(prev[category] || []), newService]
+                }));
+                setEditingService(null);
+            };
+
+            const updateService = (category, serviceId, updatedService) => {
+                setServices(prev => ({
+                    ...prev,
+                    [category]: prev[category].map(s => 
+                        s.id === serviceId ? { ...s, ...updatedService } : s
+                    )
+                }));
+                setEditingService(null);
+            };
+
+            const deleteService = (category, serviceId) => {
+                setServices(prev => ({
+                    ...prev,
+                    [category]: prev[category].filter(s => s.id !== serviceId)
+                }));
+            };
+
+            const addMaster = (master) => {
+                const newMaster = {
+                    id: Date.now(),
+                    rating: 5.0,
+                    avatar: master.name.split(' ').map(n => n[0]).join(''),
+                    ...master
+                };
+                setMasters(prev => [...prev, newMaster]);
+                setEditingMaster(null);
+            };
+
+            const updateMaster = (masterId, updatedMaster) => {
+                setMasters(prev => prev.map(m => 
+                    m.id === masterId ? { ...m, ...updatedMaster } : m
+                ));
+                setEditingMaster(null);
+            };
+
+            const deleteMaster = (masterId) => {
+                setMasters(prev => prev.filter(m => m.id !== masterId));
+            };
+
+            const addCategory = () => {
+                if (newCategory && !services[newCategory]) {
+                    setServices(prev => ({ ...prev, [newCategory]: [] }));
+                    setNewCategory('');
+                }
+            };
+
+            const renderServices = () => (
+                <div>
+                    {Object.entries(services).map(([category, categoryServices]) => (
+                        <div key={category} className="service-category">
+                            <h3 className="category-title">✨ {category}</h3>
+                            {categoryServices.map(service => (
+                                <div
+                                    key={service.id}
+                                    className={`service-card ${selectedService?.id === service.id ? 'selected' : ''}`}
+                                    onClick={() => {
+                                        setSelectedService(service);
+                                        setActiveTab('masters');
+                                    }}
+                                >
+                                    <div className="service-info">
+                                        <div>
+                                            <div className="service-name">{service.name}</div>
+                                            <div className="service-duration">⏱️ {service.duration} мин</div>
+                                        </div>
+                                        <div className="service-price">{service.price} ₽</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            );
+
+            const renderMasters = () => (
+                <div>
+                    {!selectedService && (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">👤</div>
+                            <div className="empty-state-text">Сначала выберите услугу</div>
+                        </div>
+                    )}
+                    {selectedService && (
+                        <>
+                            <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                                <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Выбранная услуга:</div>
+                                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--accent-gold)' }}>{selectedService.name}</div>
+                            </div>
+                            <div className="master-grid">
+                                {masters.map(master => (
+                                    <div
+                                        key={master.id}
+                                        className={`master-card ${selectedMaster?.id === master.id ? 'selected' : ''}`}
+                                        onClick={() => {
+                                            setSelectedMaster(master);
+                                            setActiveTab('calendar');
+                                        }}
+                                    >
+                                        <div className="master-avatar">{master.avatar}</div>
+                                        <div className="master-name">{master.name}</div>
+                                        <div className="master-specialty">{master.specialty}</div>
+                                        <div className="master-rating">
+                                            ⭐ {master.rating}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+
+            const renderCalendar = () => {
+                if (!selectedMaster) {
+                    return (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">📅</div>
+                            <div className="empty-state-text">Сначала выберите мастера</div>
+                        </div>
+                    );
+                }
+
+                const year = currentMonth.getFullYear();
+                const month = currentMonth.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startingDayOfWeek = firstDay.getDay() || 7;
+                
+                const days = [];
+                for (let i = 1; i < startingDayOfWeek; i++) {
+                    days.push(<div key={`empty-${i}`} className="calendar-day disabled"></div>);
+                }
+                
+                const today = new Date();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const isPast = date < today.setHours(0, 0, 0, 0);
+                    const isToday = date.toDateString() === new Date().toDateString();
+                    const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+                    
+                    days.push(
+                        <div
+                            key={day}
+                            className={`calendar-day ${isPast ? 'disabled' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}`}
+                            onClick={() => !isPast && setSelectedDate(date)}
+                        >
+                            {day}
+                        </div>
+                    );
+                }
+
+                const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+                                  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+                return (
+                    <div>
+                        <div style={{ marginBottom: '20px', padding: '16px', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                            <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Мастер:</div>
+                            <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--accent-rose)' }}>{selectedMaster.name}</div>
+                        </div>
+
+                        <div className="calendar-container">
+                            <div className="calendar-header">
+                                <button
+                                    className="calendar-nav"
+                                    onClick={() => setCurrentMonth(new Date(year, month - 1))}
+                                >
+                                    ←
+                                </button>
+                                <div className="calendar-month">{monthNames[month]} {year}</div>
+                                <button
+                                    className="calendar-nav"
+                                    onClick={() => setCurrentMonth(new Date(year, month + 1))}
+                                >
+                                    →
+                                </button>
+                            </div>
+                            <div className="calendar-grid">
+                                {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
+                                    <div key={day} className="calendar-day-header">{day}</div>
+                                ))}
+                                {days}
+                            </div>
+
+                            {selectedDate && (
+                                <div className="time-slots">
+                                    <div className="time-slots-title">⏰ Доступное время</div>
+                                    <div className="time-slots-grid">
+                                        {TIME_SLOTS.map(time => {
+                                            const isDisabled = Math.random() > 0.7; // Random availability
+                                            return (
+                                                <div
+                                                    key={time}
+                                                    className={`time-slot ${isDisabled ? 'disabled' : ''} ${selectedTime === time ? 'selected' : ''}`}
+                                                    onClick={() => !isDisabled && setSelectedTime(time)}
+                                                >
+                                                    {time}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {selectedService && selectedMaster && selectedDate && selectedTime && (
+                            <div className="booking-summary">
+                                <div className="summary-title">📋 Детали записи</div>
+                                <div className="summary-item">
+                                    <span className="summary-label">Услуга</span>
+                                    <span className="summary-value">{selectedService.name}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <span className="summary-label">Мастер</span>
+                                    <span className="summary-value">{selectedMaster.name}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <span className="summary-label">Дата</span>
+                                    <span className="summary-value">
+                                        {selectedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </span>
+                                </div>
+                                <div className="summary-item">
+                                    <span className="summary-label">Время</span>
+                                    <span className="summary-value">{selectedTime}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <span className="summary-label">Стоимость</span>
+                                    <span className="summary-value" style={{ color: 'var(--accent-gold)', fontSize: '18px' }}>
+                                        {selectedService.price} ₽
+                                    </span>
+                                </div>
+                                <button className="btn-primary" onClick={handleBooking}>
+                                    Подтвердить запись
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const renderProfile = () => (
+                <div>
+                    <div className="profile-section">
+                        <div className="profile-header">
+                            <div className="profile-avatar">
+                                {window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name?.[0] || 'П'}
+                            </div>
+                            <div className="profile-info">
+                                <h2>{window.Telegram?.WebApp?.initDataUnsafe?.user?.first_name || 'Пользователь'}</h2>
+                                <div className="profile-stats">
+                                    🎯 Посещений: {userAppointments.filter(a => a.status === 'past').length} | 
+                                    ⏰ Предстоящих: {userAppointments.filter(a => a.status === 'upcoming').length}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style={{ marginBottom: '16px', fontSize: '18px', fontWeight: '600' }}>
+                        📅 Предстоящие записи
+                    </h3>
+                    {userAppointments.filter(apt => apt.status === 'upcoming').length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">📅</div>
+                            <div className="empty-state-text">У вас нет предстоящих записей</div>
+                        </div>
+                    ) : (
+                        userAppointments
+                            .filter(apt => apt.status === 'upcoming')
+                            .map(apt => (
+                                <div key={apt.id} className="appointment-card">
+                                    <div className="appointment-status upcoming">Предстоящая</div>
+                                    <div className="appointment-date">{apt.date} в {apt.time}</div>
+                                    <div className="appointment-details">
+                                        <div>💇‍♀️ {apt.service}</div>
+                                        <div>👤 {apt.master}</div>
+                                    </div>
+                                    <div className="appointment-actions">
+                                        <button className="btn-secondary btn-cancel" onClick={() => handleCancelAppointment(apt.id)}>
+                                            ❌ Отменить
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                    )}
+
+                    <h3 style={{ margin: '32px 0 16px', fontSize: '18px', fontWeight: '600' }}>
+                        📜 История посещений
+                    </h3>
+                    {userAppointments
+                        .filter(apt => apt.status === 'past')
+                        .map(apt => (
+                            <div key={apt.id} className="appointment-card">
+                                <div className="appointment-status past">Завершено</div>
+                                <div className="appointment-date">{apt.date} в {apt.time}</div>
+                                <div className="appointment-details">
+                                    <div>💇‍♀️ {apt.service}</div>
+                                    <div>👤 {apt.master}</div>
+                                </div>
+                            </div>
+                        ))}
+                </div>
+            );
+
+            const renderAdminServices = () => (
+                <div>
+                    <div className="admin-header">
+                        <h2>⚙️ Управление услугами</h2>
+                        <button 
+                            className="btn-admin-add"
+                            onClick={() => setEditingService({ category: Object.keys(services)[0] || '', name: '', duration: 60, price: 0 })}
+                        >
+                            ➕ Добавить услугу
+                        </button>
+                    </div>
+
+                    <div className="admin-section">
+                        <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>➕ Добавить категорию</h3>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <input
+                                type="text"
+                                className="admin-input"
+                                placeholder="Название категории"
+                                value={newCategory}
+                                onChange={(e) => setNewCategory(e.target.value)}
+                            />
+                            <button className="btn-admin-action" onClick={addCategory}>Добавить</button>
+                        </div>
+                    </div>
+
+                    {Object.entries(services).map(([category, categoryServices]) => (
+                        <div key={category} className="admin-category-section">
+                            <h3 className="admin-category-title">{category}</h3>
+                            <div className="admin-services-list">
+                                {categoryServices.map(service => (
+                                    <div key={service.id} className="admin-service-card">
+                                        <div className="admin-service-info">
+                                            <div className="admin-service-name">{service.name}</div>
+                                            <div className="admin-service-meta">
+                                                ⏱️ {service.duration} мин | 💰 {service.price} ₽
+                                            </div>
+                                        </div>
+                                        <div className="admin-service-actions">
+                                            <button 
+                                                className="btn-icon"
+                                                onClick={() => setEditingService({ ...service, category })}
+                                            >
+                                                ✏️
+                                            </button>
+                                            <button 
+                                                className="btn-icon btn-danger"
+                                                onClick={() => deleteService(category, service.id)}
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+
+                    {editingService && (
+                        <div className="modal-overlay" onClick={() => setEditingService(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <h3 className="modal-title">
+                                    {editingService.id ? 'Редактировать услугу' : 'Добавить услугу'}
+                                </h3>
+                                <div className="form-group">
+                                    <label>Категория</label>
+                                    <select
+                                        className="admin-input"
+                                        value={editingService.category}
+                                        onChange={(e) => setEditingService({ ...editingService, category: e.target.value })}
+                                    >
+                                        {Object.keys(services).map(cat => (
+                                            <option key={cat} value={cat}>{cat}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Название</label>
+                                    <input
+                                        type="text"
+                                        className="admin-input"
+                                        value={editingService.name}
+                                        onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Длительность (минут)</label>
+                                    <input
+                                        type="number"
+                                        className="admin-input"
+                                        value={editingService.duration}
+                                        onChange={(e) => setEditingService({ ...editingService, duration: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Цена (₽)</label>
+                                    <input
+                                        type="number"
+                                        className="admin-input"
+                                        value={editingService.price}
+                                        onChange={(e) => setEditingService({ ...editingService, price: parseInt(e.target.value) })}
+                                    />
+                                </div>
+                                <div className="modal-actions">
+                                    <button 
+                                        className="btn-secondary"
+                                        onClick={() => setEditingService(null)}
+                                    >
+                                        Отмена
+                                    </button>
+                                    <button 
+                                        className="btn-primary"
+                                        onClick={() => {
+                                            if (editingService.id) {
+                                                updateService(editingService.category, editingService.id, editingService);
+                                            } else {
+                                                addService(editingService.category, editingService);
+                                            }
+                                        }}
+                                    >
+                                        Сохранить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            const renderAdminMasters = () => (
+                <div>
+                    <div className="admin-header">
+                        <h2>👥 Управление мастерами</h2>
+                        <button 
+                            className="btn-admin-add"
+                            onClick={() => setEditingMaster({ name: '', specialty: '', telegramId: '' })}
+                        >
+                            ➕ Добавить мастера
+                        </button>
+                    </div>
+
+                    <div className="admin-masters-grid">
+                        {masters.map(master => (
+                            <div key={master.id} className="admin-master-card">
+                                <div className="admin-master-avatar">{master.avatar}</div>
+                                <div className="admin-master-info">
+                                    <div className="admin-master-name">{master.name}</div>
+                                    <div className="admin-master-specialty">{master.specialty}</div>
+                                    <div className="admin-master-telegram">📱 {master.telegramId}</div>
+                                    <div className="admin-master-rating">⭐ {master.rating}</div>
+                                </div>
+                                <div className="admin-master-actions">
+                                    <button 
+                                        className="btn-icon"
+                                        onClick={() => setEditingMaster(master)}
+                                    >
+                                        ✏️
+                                    </button>
+                                    <button 
+                                        className="btn-icon btn-danger"
+                                        onClick={() => deleteMaster(master.id)}
+                                    >
+                                        🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {editingMaster && (
+                        <div className="modal-overlay" onClick={() => setEditingMaster(null)}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                                <h3 className="modal-title">
+                                    {editingMaster.id ? 'Редактировать мастера' : 'Добавить мастера'}
+                                </h3>
+                                <div className="form-group">
+                                    <label>Имя и фамилия</label>
+                                    <input
+                                        type="text"
+                                        className="admin-input"
+                                        value={editingMaster.name}
+                                        onChange={(e) => setEditingMaster({ ...editingMaster, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Специализация</label>
+                                    <input
+                                        type="text"
+                                        className="admin-input"
+                                        value={editingMaster.specialty}
+                                        onChange={(e) => setEditingMaster({ ...editingMaster, specialty: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Telegram ID (например, @username)</label>
+                                    <input
+                                        type="text"
+                                        className="admin-input"
+                                        value={editingMaster.telegramId}
+                                        onChange={(e) => setEditingMaster({ ...editingMaster, telegramId: e.target.value })}
+                                    />
+                                </div>
+                                <div className="modal-actions">
+                                    <button 
+                                        className="btn-secondary"
+                                        onClick={() => setEditingMaster(null)}
+                                    >
+                                        Отмена
+                                    </button>
+                                    <button 
+                                        className="btn-primary"
+                                        onClick={() => {
+                                            if (editingMaster.id) {
+                                                updateMaster(editingMaster.id, editingMaster);
+                                            } else {
+                                                addMaster(editingMaster);
+                                            }
+                                        }}
+                                    >
+                                        Сохранить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+
+            const renderAdminNotifications = () => (
+                <div>
+                    <div className="admin-header">
+                        <h2>🔔 Уведомления ({notifications.filter(n => !n.read).length})</h2>
+                        <button 
+                            className="btn-admin-action"
+                            onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
+                        >
+                            Отметить все прочитанными
+                        </button>
+                    </div>
+
+                    {notifications.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">🔔</div>
+                            <div className="empty-state-text">Нет уведомлений</div>
+                        </div>
+                    ) : (
+                        <div>
+                            {notifications.map(notif => (
+                                <div key={notif.id} className={`notification-card ${notif.read ? 'read' : ''}`}>
+                                    <div className="notification-header">
+                                        <span className="notification-time">{notif.timestamp}</span>
+                                        {!notif.read && <span className="notification-badge">Новое</span>}
+                                    </div>
+                                    <div className="notification-message">{notif.message}</div>
+                                    <button 
+                                        className="btn-secondary"
+                                        style={{ marginTop: '12px', fontSize: '13px', padding: '8px 16px' }}
+                                        onClick={() => setNotifications(notifications.map(n => 
+                                            n.id === notif.id ? { ...n, read: true } : n
+                                        ))}
+                                    >
+                                        Отметить прочитанным
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+
+            return (
+                <div className="app-container">
+                    <div className="header">
+                        <h1>✨ Салон Красоты</h1>
+                        <div className="header-subtitle">Онлайн-запись за 3 клика</div>
+                    </div>
+
+                    <div className="nav-tabs">
+                        <div
+                            className={`nav-tab ${activeTab === 'services' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('services')}
+                        >
+                            💅 Услуги
+                        </div>
+                        <div
+                            className={`nav-tab ${activeTab === 'masters' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('masters')}
+                        >
+                            👥 Мастера
+                        </div>
+                        <div
+                            className={`nav-tab ${activeTab === 'calendar' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('calendar')}
+                        >
+                            📅 Календарь
+                        </div>
+                        <div
+                            className={`nav-tab ${activeTab === 'profile' ? 'active' : ''}`}
+                            onClick={() => setActiveTab('profile')}
+                        >
+                            👤 Профиль
+                        </div>
+                        {isAdmin && (
+                            <>
+                                <div
+                                    className={`nav-tab ${activeTab === 'admin-services' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('admin-services')}
+                                >
+                                    ⚙️ Услуги
+                                </div>
+                                <div
+                                    className={`nav-tab ${activeTab === 'admin-masters' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('admin-masters')}
+                                >
+                                    👨‍💼 Мастера
+                                </div>
+                                <div
+                                    className={`nav-tab ${activeTab === 'admin-notifications' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('admin-notifications')}
+                                    style={{ position: 'relative' }}
+                                >
+                                    🔔 Уведомления
+                                    {notifications.filter(n => !n.read).length > 0 && (
+                                        <span style={{
+                                            position: 'absolute',
+                                            top: '4px',
+                                            right: '4px',
+                                            background: '#ef4444',
+                                            borderRadius: '50%',
+                                            width: '18px',
+                                            height: '18px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '10px',
+                                            fontWeight: '700'
+                                        }}>
+                                            {notifications.filter(n => !n.read).length}
+                                        </span>
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="content">
+                        {activeTab === 'services' && renderServices()}
+                        {activeTab === 'masters' && renderMasters()}
+                        {activeTab === 'calendar' && renderCalendar()}
+                        {activeTab === 'profile' && renderProfile()}
+                        {activeTab === 'admin-services' && isAdmin && renderAdminServices()}
+                        {activeTab === 'admin-masters' && isAdmin && renderAdminMasters()}
+                        {activeTab === 'admin-notifications' && isAdmin && renderAdminNotifications()}
+                    </div>
+
+                    {showSuccess && (
+                        <div className="success-modal">
+                            <div className="success-content">
+                                <div className="success-icon">✅</div>
+                                <div className="success-title">Запись подтверждена!</div>
+                                <div className="success-message">
+                                    Вы успешно записались на {selectedService?.name} к мастеру {selectedMaster?.name}<br/>
+                                    📅 {selectedDate?.toLocaleDateString('ru-RU')} в {selectedTime}<br/><br/>
+                                    Напоминание придёт за 24 часа до визита
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
